@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "nftcast-app"
-  }
+  },
+  "targets": {
+    "nftcast-app": {
+      "hosting": {
+        "screen": [
+          "nftcast-app"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
