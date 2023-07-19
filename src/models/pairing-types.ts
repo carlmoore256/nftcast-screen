@@ -1,5 +1,6 @@
 export interface IPairingCodeResponse {
-    deviceId: string;
+    // deviceId: string;
+    pairingId: string;
     code: string;
 }
 

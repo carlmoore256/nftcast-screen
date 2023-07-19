@@ -1,10 +1,12 @@
-const API_BASE_URL = 'https://api.nftcast.app:3000/v1';
+// const API_BASE_URL = 'https://api.nftcast.app:3000/v1';
+const API_BASE_URL = 'http://localhost:3000';
+const API_VERSION = 'v1';
 
 export class APIClient {
     constructor(public baseUrl : string = API_BASE_URL) {}
   
     async get<T>(endpoint : string, params?: Record<string, string>) : Promise<T> {
-      const url = new URL(`${this.baseUrl}/${endpoint}`);
+      const url = new URL(`${API_VERSION}/` + endpoint, this.baseUrl);
       url.search = new URLSearchParams(params).toString();
   
       const response = await fetch(url.toString());

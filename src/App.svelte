@@ -1,11 +1,13 @@
 <script>
-    import PairingDisplay from "./components/pairing-display.svelte";
+    import PairingDisplay from "./components/PairingDisplay.svelte";
 
 
 </script>
 
 <div class="container">
-  <PairingDisplay />
+  <PairingDisplay onPaired={() => {
+    console.log("Paired!");
+  }}/>
 </div>
 
 <style>
