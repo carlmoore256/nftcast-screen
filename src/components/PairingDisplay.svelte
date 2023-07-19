@@ -7,32 +7,20 @@
         IPairingStatusResponse,
     } from "../models/pairing-types";
     import { pairingId } from "../stores/pairingIdStore";
+    import { getPairingCode, getPairingStatus } from "../services/api/pair";
 
     export let onPaired: () => void;
 
-    const api = new APIClient();
-
-    onMount(getPairingCode);
+    onMount(setPairingCode);
 
     $: pairingCode = null;
 
-    let tempDeviceId = null;
-
-    async function getPairingCode() {
+    async function setPairingCode() {
         try {
-            const response = await api.get<IPairingCodeResponse>(
-                "pair/get-code"
-            );
+            const response = await getPairingCode();
             console.log(`Pairing Code Reponse: ${JSON.stringify(response)}`);
             pairingCode = response.code;
             pairingId.set(response.pairingId);
-            // $deviceId = response.deviceId;
-            // deviceId.set(tempDeviceId);
-            // if (tempDeviceId != response.deviceId) {
-            //     tempDeviceId = response.deviceId;
-            // }
-            // tempDeviceId = response.deviceId;
-
             checkPairingStatus();
         } catch (error) {
             throw new Error(`Error getting pairing code` + error);
@@ -42,15 +30,7 @@
     async function checkPairingStatus() {
         console.log("Checking pairing status for code: " + pairingCode);
         try {
-            const response = await api.get<IPairingStatusResponse>(
-                "pair/status",
-                {
-                    code: pairingCode,
-                },
-                {
-                    credentials: "include",
-                }
-            );
+            const response = await getPairingStatus(pairingCode);
             console.log(`Pairing Status Reponse: ${JSON.stringify(response)}`);
             if (response.status === "claimed") {
                 console.log("Paired! Got Device ID: " + response.deviceId);

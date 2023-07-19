@@ -2,24 +2,23 @@
   // ContentDisplay checks for info & displays content
   import { onMount } from "svelte";
   import { APIClient } from "../services/api-client";
+  import { getCurrentContentForDevice } from "../services/api/device";
 
   export let deviceId = null;
 
   onMount(async () => {
-    console.log("Dude: " + deviceId);
     await checkForInfo();
   });
 
   async function checkForInfo() {
-    const api = new APIClient();
-    const content = await api.get(
-      "device/current-content",
-      {
-        id: deviceId,
-        setupName: "default",
-      },
-      { credentials: "include" }
-    );
+    // const content = await api.get(
+    //   `device/current-content/${deviceId}`,
+    //   {
+    //     setupName: "default",
+    //   },
+    //   { credentials: "include" }
+    // );
+    const content = await getCurrentContentForDevice(deviceId);
     console.log("Got info: " + content);
   }
 
