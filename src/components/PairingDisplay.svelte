@@ -2,7 +2,10 @@
     import { onMount } from "svelte";
     import { deviceId } from "../stores/deviceIdStore";
     import { APIClient } from "../services/api-client";
-    import type { IPairingCodeResponse, IPairingStatusResponse } from "../models/pairing-types";
+    import type {
+        IPairingCodeResponse,
+        IPairingStatusResponse,
+    } from "../models/pairing-types";
     import { pairingId } from "../stores/pairingIdStore";
 
     export let onPaired: () => void;
@@ -13,13 +16,13 @@
 
     $: pairingCode = null;
 
-
     let tempDeviceId = null;
-
 
     async function getPairingCode() {
         try {
-            const response = await api.get<IPairingCodeResponse>("pair/get-code");
+            const response = await api.get<IPairingCodeResponse>(
+                "pair/get-code"
+            );
             console.log(`Pairing Code Reponse: ${JSON.stringify(response)}`);
             pairingCode = response.code;
             pairingId.set(response.pairingId);
@@ -39,21 +42,27 @@
     async function checkPairingStatus() {
         console.log("Checking pairing status for code: " + pairingCode);
         try {
-            const response = await api.get<IPairingStatusResponse>("pair/status", {
-                code: pairingCode,
-            });
+            const response = await api.get<IPairingStatusResponse>(
+                "pair/status",
+                {
+                    code: pairingCode,
+                },
+                {
+                    credentials: "include",
+                }
+            );
             console.log(`Pairing Status Reponse: ${JSON.stringify(response)}`);
             if (response.status === "claimed") {
-                console.log("Paired!");
-                // deviceId.set(response.deviceId);
+                console.log("Paired! Got Device ID: " + response.deviceId);
+                deviceId.set(response.deviceId);
                 onPaired();
+                return;
             }
         } catch (error) {
             throw new Error(`Error getting pairing code` + error);
         }
         setTimeout(checkPairingStatus, 1000);
     }
-    
 </script>
 
 <div class="container">
@@ -66,7 +75,7 @@
         {:else}
             <p>Generating...</p>
         {/if}
-    </div> 
+    </div>
 </div>
 
 <style>

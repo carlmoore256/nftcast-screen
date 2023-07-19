@@ -6,4 +6,5 @@ export interface IPairingCodeResponse {
 
 export interface IPairingStatusResponse {
     status : "pending" | "claimed";
+    deviceId?: string;
 }

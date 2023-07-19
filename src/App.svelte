@@ -1,13 +1,19 @@
 <script>
-    import PairingDisplay from "./components/PairingDisplay.svelte";
-
-
+  import PairingDisplay from "./components/PairingDisplay.svelte";
+  import ContentDisplay from "./components/ContentDisplay.svelte";
+  import { deviceId } from "./stores/deviceIdStore";
 </script>
 
 <div class="container">
-  <PairingDisplay onPaired={() => {
-    console.log("Paired!");
-  }}/>
+  {#if $deviceId == null}
+    <PairingDisplay
+      onPaired={() => {
+        console.log("Paired!");
+      }}
+    />
+  {:else}
+    <ContentDisplay deviceId={$deviceId} />
+  {/if}
 </div>
 
 <style>
