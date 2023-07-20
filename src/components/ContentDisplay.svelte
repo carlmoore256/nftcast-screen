@@ -15,7 +15,9 @@
     establishWSConnection();
 
     function connect(connectionToken: string) {
-        ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/${connectionToken}`);
+        // wss://api.nftcast.app:3000
+        // import.meta.env.VITE_WS_URL
+        ws = new WebSocket(`wss://api.nftcast.app:3000/${connectionToken}`);
         ws.onopen = () => {
             console.log("WebSocket is connected");
             ws.send(JSON.stringify({ request: "update" }));
