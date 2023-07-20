@@ -2,9 +2,11 @@ import axios from "axios";
 import { getApiUrl } from "./constants"; // adjust the path to match your project structure
 import type { IPairingCodeResponse, IPairingStatusResponse } from "../../models/pairing-types";
 
+axios.defaults.withCredentials = true;
+
 export async function getPairingStatus(code: string) : Promise<IPairingStatusResponse> {
     try {
-        const response = await axios.get(`${getApiUrl()}/pair/status/${code}`);
+        const response = await axios.get(`${getApiUrl()}/pair/status/${code}`, { withCredentials: true });
         return response.data;
     } catch (error) {
         console.error(`Error checking pairing status: ${error}`);

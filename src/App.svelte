@@ -4,24 +4,24 @@
     import ContentDisplay from "./components/ContentDisplay.svelte";
     import { deviceId } from "./stores/deviceIdStore";
     import { getIsAuthenticated } from "./services/api/device";
-    // import { isAuthenticated } from "./stores/isAuthenticatedStore";
+    import { isAuthenticated } from "./stores/isAuthenticatedStore";
 
-    let authenticated = false;
-    
+    // let authenticated = false;
+
+    let hasConnected = false;
+
     onMount(async () => {
-        authenticated = await getIsAuthenticated();
+        $isAuthenticated = await getIsAuthenticated();
+        hasConnected = true;
+        console.log("Authenticated: " + $isAuthenticated);
     });
 </script>
 
 <div class="container">
-    {#if authenticated}
+    {#if $isAuthenticated}
         <ContentDisplay deviceId={$deviceId} />
-    {:else}
-        <PairingDisplay
-            onPaired={() => {
-                console.log("Paired!");
-            }}
-        />
+    {:else if hasConnected}
+        <PairingDisplay/>
     {/if}
 </div>
 

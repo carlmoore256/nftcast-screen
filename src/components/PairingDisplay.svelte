@@ -8,8 +8,9 @@
     } from "../models/pairing-types";
     import { pairingId } from "../stores/pairingIdStore";
     import { getPairingCode, getPairingStatus } from "../services/api/pair";
+    import { isAuthenticated } from "../stores/isAuthenticatedStore";
 
-    export let onPaired: () => void;
+    export let onPaired: () => void = () => {};
 
     onMount(setPairingCode);
 
@@ -41,7 +42,9 @@
         } catch (error) {
             throw new Error(`Error getting pairing code` + error);
         }
-        setTimeout(checkPairingStatus, 1000);
+        if (!$isAuthenticated) {
+            setTimeout(checkPairingStatus, 1000); 
+        }
     }
 </script>
 
