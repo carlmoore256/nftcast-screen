@@ -26,3 +26,6 @@ dist-ssr
 .vscode/
 .firebase/
 favicons/
+
+.env*
+vite.config.ts*.mjs

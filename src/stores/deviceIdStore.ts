@@ -4,12 +4,12 @@ import { writable } from 'svelte/store';
 const initialDeviceId = localStorage.getItem('deviceId') || null;
 
 // Create a writable store
-export const deviceId = writable(initialDeviceId);
+export const deviceIdStore = writable(initialDeviceId);
 
 // here we could check the api to see if it's valid, or not
 
 // Subscribe to the store
-deviceId.subscribe(value => {
+deviceIdStore.subscribe(value => {
   console.log('deviceId changed to: ' + value);
   if (value !== null)
     localStorage.setItem('deviceId', value);

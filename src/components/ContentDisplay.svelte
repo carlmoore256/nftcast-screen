@@ -1,10 +1,12 @@
 <script lang="ts">
     import { getConnection } from "../services/api/device";
-    import { API_WS_URL } from "../services/api/constants";
     import type { IContent } from "../models/content-types";
     import type { IDevice } from "../models/device-types";
-
-    export let deviceId = null;
+    import { errorStore } from "../stores/errorStore";
+    import { successStore } from "../stores/successStore";
+    import { deviceIdStore } from "../stores/deviceIdStore";
+    import { isAuthenticated } from "../stores/isAuthenticatedStore";
+    // export let deviceId = null;
 
     let ws;
     let currentContent: IContent | null = null;
@@ -13,7 +15,7 @@
     establishWSConnection();
 
     function connect(connectionToken: string) {
-        ws = new WebSocket(`${API_WS_URL}/${connectionToken}`);
+        ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/${connectionToken}`);
         ws.onopen = () => {
             console.log("WebSocket is connected");
             ws.send(JSON.stringify({ request: "update" }));
@@ -22,32 +24,38 @@
         ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                if (data.key == "deviceUpdateInfo") {
-                    console.log("Got info: " + JSON.stringify(data.value));
-                    console.log(`Yo current content: ${data.value.deviceInfo}`);
-                    deviceInfo = data.value.deviceInfo;
-                    currentContent = data.value.currentContent;
+                switch(data.key) {
+                    case "deviceUpdateInfo":
+                        deviceInfo = data.value.deviceInfo;
+                        currentContent = data.value.currentContent;
+                        break;
+                    case "deviceDeleted":
+                        currentContent = null;
+                        deviceInfo = null;
+                        errorStore.set("Device deleted");
+                        isAuthenticated.set(false);
+                        break;
                 }
             } catch (error) {
-                console.error("Error parsing data: " + error);
+                errorStore.set("Error parsing data");
             }
         };
 
         ws.onerror = (event) => {
-            console.error(`WebSocket error: ${event}`);
+            errorStore.set("WebSocket error with server");
         };
 
         ws.onclose = (event) => {
-            console.log("WebSocket is closed now.");
+            console.log("Connection closed with server");
         };
     }
 
     async function establishWSConnection() {
-        const connectionToken = await getConnection(deviceId);
+        const connectionToken = await getConnection($deviceIdStore);
         if (connectionToken) {
             connect(connectionToken);
         } else {
-            console.log("No connection token");
+            errorStore.set("Connection could not be established");
         }
     }
 </script>
@@ -68,7 +76,7 @@
     {/if}
 
     {#if currentContent}
-        <img src={currentContent.uri} alt="Content"/>
+        <img src={currentContent.uri} alt="Content" />
     {/if}
 </div>
 
@@ -84,12 +92,12 @@
     }
 
     img {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: contain; 
-      /* make object-fit: cover; if we want it to fill */
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        /* make object-fit: cover; if we want it to fill */
     }
 </style>
