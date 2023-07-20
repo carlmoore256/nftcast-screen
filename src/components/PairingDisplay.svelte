@@ -1,7 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { deviceId } from "../stores/deviceIdStore";
-    import { APIClient } from "../services/api-client";
     import type {
         IPairingCodeResponse,
         IPairingStatusResponse,

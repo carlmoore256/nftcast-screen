@@ -5,9 +5,7 @@
     import { deviceId } from "./stores/deviceIdStore";
     import { getIsAuthenticated } from "./services/api/device";
     import { isAuthenticated } from "./stores/isAuthenticatedStore";
-
-    // let authenticated = false;
-
+    
     let hasConnected = false;
 
     onMount(async () => {

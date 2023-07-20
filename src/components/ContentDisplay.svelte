@@ -1,7 +1,4 @@
 <script lang="ts">
-    // ContentDisplay checks for info & displays content
-    import { onMount } from "svelte";
-    import { getCurrentContentForDevice } from "../services/api/device";
     import { getConnection } from "../services/api/device";
     import { API_WS_URL } from "../services/api/constants";
     import type { IContent } from "../models/content-types";
