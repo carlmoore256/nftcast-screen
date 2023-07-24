@@ -17,7 +17,7 @@
     function connect(connectionToken: string) {
         // wss://api.nftcast.app:3000
         // import.meta.env.VITE_WS_URL
-        ws = new WebSocket(`wss://api.nftcast.app:3000/${connectionToken}`);
+        ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/${connectionToken}`);
         ws.onopen = () => {
             console.log("WebSocket is connected");
             ws.send(JSON.stringify({ request: "update" }));
@@ -26,7 +26,7 @@
         ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                switch(data.key) {
+                switch (data.key) {
                     case "deviceUpdateInfo":
                         deviceInfo = data.value.deviceInfo;
                         currentContent = data.value.currentContent;
@@ -62,7 +62,7 @@
     }
 </script>
 
-<div>
+<div class={currentContent ? "hide-cursor" : ""}>
     {#if !deviceInfo && !currentContent}
         <h1>Device Info: No info yet</h1>
     {/if}
@@ -101,5 +101,9 @@
         height: 100%;
         object-fit: contain;
         /* make object-fit: cover; if we want it to fill */
+    }
+
+    .hide-cursor {
+        cursor: none;
     }
 </style>
