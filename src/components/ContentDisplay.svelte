@@ -11,7 +11,10 @@
     let ws;
     let currentContent: IContent | null = null;
     let deviceInfo: IDevice | null = null;
-
+    let reconnectionAttempt = 0;
+    const MAX_RECONNECTION_ATTEMPTS = 5;
+    const RECONNECTION_DELAY = 5000;
+    
     establishWSConnection();
 
     function connect(connectionToken: string) {
@@ -45,13 +48,26 @@
 
         ws.onerror = (event) => {
             errorStore.set("WebSocket error with server");
+            handleReconnection(connectionToken);
         };
 
         ws.onclose = (event) => {
             console.log("Connection closed with server");
+            handleReconnection(connectionToken);
         };
     }
 
+    function handleReconnection(connectionToken: string) {
+        if (reconnectionAttempt < MAX_RECONNECTION_ATTEMPTS) {
+            setTimeout(() => {
+                console.log(`Reconnecting attempt #${reconnectionAttempt + 1}`);
+                connect(connectionToken);
+                reconnectionAttempt += 1;
+            }, RECONNECTION_DELAY);
+        } else {
+            console.log("Max reconnection attempts reached");
+        }
+    }
     async function establishWSConnection() {
         const connectionToken = await getConnection($deviceIdStore);
         if (connectionToken) {
