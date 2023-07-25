@@ -38,7 +38,7 @@
                         deviceInfo = data.value.deviceInfo;
                         currentContent = data.value.currentContent;
                         deviceContentPairConfig =
-                            data.value.deviceContentPairConfig;
+                            data.value.dcpConfig;
                         break;
                     case "deviceDeleted":
                         currentContent = null;
@@ -88,7 +88,7 @@
     }
 
     let style = "";
-    let containerStyle = "background-color: rgb(24, 24, 24);";
+    // let containerStyle = "background-color: rgb(24, 24, 24);";
     $: if (deviceContentPairConfig) {
         const { size, posX, posY, rotation, backgroundColor } =
             deviceContentPairConfig;
@@ -101,7 +101,7 @@
             objectFit: "contain",
             cursor: "none",
         };
-        containerStyle = `background-color: #${backgroundColor}`;
+        // containerStyle = `background-color: #${backgroundColor}`;
         console.log(`new style: ${JSON.stringify(styleObj)}`)
         style = Object.entries(styleObj)
             .map(([prop, value]) => `${prop}: ${value}`)
@@ -109,7 +109,7 @@
     }
 </script>
 
-<div class={currentContent ? "hide-cursor" : ""} style={containerStyle}>
+<div class={currentContent ? "hide-cursor" : ""}>
     {#if !deviceInfo && !currentContent}
         <h1>Device Info: No info yet</h1>
     {/if}
@@ -154,6 +154,6 @@
     }
 
     .hide-cursor {
-        /* cursor: none; */
+        cursor: none;
     }
 </style>
