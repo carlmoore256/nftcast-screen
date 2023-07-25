@@ -1,7 +1,10 @@
 <script lang="ts">
     import { getConnection } from "../services/api/device";
-    import type { IContent } from "../models/content-types";
-    import type { IDevice } from "../models/device-types";
+    import type {
+        IDevice,
+        IContent,
+        IDeviceContentPairConfig,
+    } from "../models/types";
     import { errorStore } from "../stores/errorStore";
     import { successStore } from "../stores/successStore";
     import { deviceIdStore } from "../stores/deviceIdStore";
@@ -11,10 +14,11 @@
     let ws;
     let currentContent: IContent | null = null;
     let deviceInfo: IDevice | null = null;
+    let deviceContentPairConfig: IDeviceContentPairConfig | null = null;
     let reconnectionAttempt = 0;
     const MAX_RECONNECTION_ATTEMPTS = 5;
     const RECONNECTION_DELAY = 5000;
-    
+
     establishWSConnection();
 
     function connect(connectionToken: string) {
@@ -33,12 +37,18 @@
                     case "deviceUpdateInfo":
                         deviceInfo = data.value.deviceInfo;
                         currentContent = data.value.currentContent;
+                        deviceContentPairConfig =
+                            data.value.deviceContentPairConfig;
                         break;
                     case "deviceDeleted":
                         currentContent = null;
                         deviceInfo = null;
                         errorStore.set("Device deleted");
                         isAuthenticated.set(false);
+                        break;
+                    case "deviceContentPairConfig":
+                        console.log(`Received update config: ${JSON.stringify(data.value)}`)
+                        deviceContentPairConfig = {...data.value};
                         break;
                 }
             } catch (error) {
@@ -52,7 +62,7 @@
         };
 
         ws.onclose = (event) => {
-            console.log("Connection closed with server");
+            errorStore.set("Connection closed with server");
             handleReconnection(connectionToken);
         };
     }
@@ -76,9 +86,30 @@
             errorStore.set("Connection could not be established");
         }
     }
+
+    let style = "";
+    let containerStyle = "background-color: rgb(24, 24, 24);";
+    $: if (deviceContentPairConfig) {
+        const { size, posX, posY, rotation, backgroundColor } =
+            deviceContentPairConfig;
+        const styleObj = {
+            position: "absolute",
+            top: `calc(50% + ${posY * 100}%)`,
+            left: `calc(50% + ${posX * 100}%)`,
+            transform: `translate(-50%, -50%) scale(${size}) rotate(${rotation}deg)`,
+            backgroundColor: `#${backgroundColor}`,
+            objectFit: "contain",
+            cursor: "none",
+        };
+        containerStyle = `background-color: #${backgroundColor}`;
+        console.log(`new style: ${JSON.stringify(styleObj)}`)
+        style = Object.entries(styleObj)
+            .map(([prop, value]) => `${prop}: ${value}`)
+            .join("; ");
+    }
 </script>
 
-<div class={currentContent ? "hide-cursor" : ""}>
+<div class={currentContent ? "hide-cursor" : ""} style={containerStyle}>
     {#if !deviceInfo && !currentContent}
         <h1>Device Info: No info yet</h1>
     {/if}
@@ -94,8 +125,11 @@
     {/if}
 
     {#if currentContent}
-        <img src={currentContent.uri} alt="Content" />
+        <img src={currentContent.uri} alt="Content" {style} />
     {/if}
+    <!-- {#if currentContent}
+        <img src={currentContent.uri} alt="Content" />
+    {/if} -->
 </div>
 
 <style>
@@ -106,7 +140,7 @@
         justify-content: center;
         padding: 25px;
         border-radius: 8px;
-        background-color: rgb(24, 24, 24);
+        background-color: rgb(0, 0, 0);
     }
 
     img {
@@ -120,6 +154,6 @@
     }
 
     .hide-cursor {
-        cursor: none;
+        /* cursor: none; */
     }
 </style>

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { getApiUrl } from "./constants"; // adjust the path to match your project structure
-import type { IContent } from "../../models/content-types";
+import type { IContent } from "../../models/types";
 import { errorStore } from "../../stores/errorStore";
 import { successStore } from "../../stores/successStore";
 

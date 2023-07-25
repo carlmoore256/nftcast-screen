@@ -3,7 +3,7 @@ import { getApiUrl } from "./constants"; // adjust the path to match your projec
 import type {
     IPairingCodeResponse,
     IPairingStatusResponse,
-} from "../../models/pairing-types";
+} from "../../models/types";
 import { errorStore } from "../../stores/errorStore";
 import { successStore } from "../../stores/successStore";
 
