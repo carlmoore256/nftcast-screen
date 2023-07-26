@@ -54,3 +54,17 @@ export async function getIsAuthenticated(): Promise<boolean> {
         return false;
     }
 }
+
+export async function renewCookie(deviceId: string): Promise<boolean> {
+    try {
+        const response = await axios.get(`${getApiUrl()}/device/${deviceId}/renew-cookie`);
+        if (response.data.status === "success") {
+            successStore.set("Cookie renewed");
+            return true;
+        }
+        return false;
+    } catch (error) {
+        errorStore.set("Failed to renew cookie");
+        return false;
+    }
+}
