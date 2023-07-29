@@ -6,18 +6,31 @@
     import { getIsAuthenticated, renewCookie } from "./services/api/device";
     import { isAuthenticated } from "./stores/isAuthenticatedStore";
     import Notifications from "./components/Notifications.svelte";
+    import { successStore } from "./stores/successStore";
 
     let hasConnected = false;
 
+    // try to get it to re-establish connection
+    // window.addEventListener("focus", function () {
+    //     location.reload();
+    // });
+
+
     onMount(async () => {
-        $isAuthenticated = await getIsAuthenticated();
-        if (!$isAuthenticated) {
+        // successStore.set(`DeviceID is ${$deviceIdStore}`);
+
+        let _isAuthenticated = false;
+
+        _isAuthenticated = await getIsAuthenticated();
+
+        if (!_isAuthenticated && $deviceIdStore) {
             // try to renew the cookie
             const isRenewed = await renewCookie($deviceIdStore);
             if (isRenewed) {
-                $isAuthenticated = await getIsAuthenticated();
+                _isAuthenticated = await getIsAuthenticated();
             }
         }
+        isAuthenticated.set(_isAuthenticated);
 
         hasConnected = true;
     });

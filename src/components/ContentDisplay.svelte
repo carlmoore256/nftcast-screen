@@ -37,8 +37,7 @@
                     case "deviceUpdateInfo":
                         deviceInfo = data.value.deviceInfo;
                         currentContent = data.value.currentContent;
-                        deviceContentPairConfig =
-                            data.value.dcpConfig;
+                        deviceContentPairConfig = data.value.dcpConfig;
                         break;
                     case "deviceDeleted":
                         currentContent = null;
@@ -47,8 +46,12 @@
                         isAuthenticated.set(false);
                         break;
                     case "deviceContentPairConfig":
-                        console.log(`Received update config: ${JSON.stringify(data.value)}`)
-                        deviceContentPairConfig = {...data.value};
+                        console.log(
+                            `Received update config: ${JSON.stringify(
+                                data.value
+                            )}`
+                        );
+                        deviceContentPairConfig = { ...data.value };
                         break;
                 }
             } catch (error) {
@@ -102,7 +105,7 @@
             cursor: "none",
         };
         // containerStyle = `background-color: #${backgroundColor}`;
-        console.log(`new style: ${JSON.stringify(styleObj)}`)
+        console.log(`new style: ${JSON.stringify(styleObj)}`);
         style = Object.entries(styleObj)
             .map(([prop, value]) => `${prop}: ${value}`)
             .join("; ");
