@@ -3,6 +3,7 @@ export interface IContent {
     uri: string;
     name: string | null;
     description: string | null;
+    mimetype: string | null;
     userId: string;
 }
 
