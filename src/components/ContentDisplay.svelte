@@ -6,27 +6,25 @@
         IDeviceContentPairConfig,
     } from "../models/types";
     import { errorStore } from "../stores/errorStore";
-    import { successStore } from "../stores/successStore";
     import { deviceIdStore } from "../stores/deviceIdStore";
     import { isAuthenticated } from "../stores/isAuthenticatedStore";
-    // export let deviceId = null;
+    import ContentRenderer from "./ContentRenderer.svelte";
 
     let ws;
     let currentContent: IContent | null = null;
     let deviceInfo: IDevice | null = null;
     let deviceContentPairConfig: IDeviceContentPairConfig | null = null;
     let reconnectionAttempt = 0;
-    const MAX_RECONNECTION_ATTEMPTS = 5;
-    const RECONNECTION_DELAY = 5000;
+    const MAX_RECONNECTION_ATTEMPTS = 50;
+    const RECONNECTION_DELAY = 500;
 
     establishWSConnection();
 
-    function connect(connectionToken: string) {
-        // wss://api.nftcast.app:3000
-        // import.meta.env.VITE_WS_URL
+    function connectToWebsocket(connectionToken: string) {
         ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/${connectionToken}`);
         ws.onopen = () => {
             console.log("WebSocket is connected");
+            reconnectionAttempt = 0;
             ws.send(JSON.stringify({ request: "update" }));
         };
 
@@ -37,8 +35,7 @@
                     case "deviceUpdateInfo":
                         deviceInfo = data.value.deviceInfo;
                         currentContent = data.value.currentContent;
-                        deviceContentPairConfig =
-                            data.value.dcpConfig;
+                        deviceContentPairConfig = data.value.dcpConfig;
                         break;
                     case "deviceDeleted":
                         currentContent = null;
@@ -47,8 +44,12 @@
                         isAuthenticated.set(false);
                         break;
                     case "deviceContentPairConfig":
-                        console.log(`Received update config: ${JSON.stringify(data.value)}`)
-                        deviceContentPairConfig = {...data.value};
+                        console.log(
+                            `Received update config: ${JSON.stringify(
+                                data.value
+                            )}`
+                        );
+                        deviceContentPairConfig = { ...data.value };
                         break;
                 }
             } catch (error) {
@@ -58,30 +59,44 @@
 
         ws.onerror = (event) => {
             errorStore.set("WebSocket error with server");
-            handleReconnection(connectionToken);
+            handleReconnection();
         };
 
         ws.onclose = (event) => {
-            errorStore.set("Connection closed with server");
-            handleReconnection(connectionToken);
+            if (reconnectionAttempt === 0) {
+                errorStore.set("Connection closed with server");
+            }
+            handleReconnection();
         };
     }
 
-    function handleReconnection(connectionToken: string) {
-        if (reconnectionAttempt < MAX_RECONNECTION_ATTEMPTS) {
-            setTimeout(() => {
+    async function handleReconnection() {
+        if (reconnectionAttempt > MAX_RECONNECTION_ATTEMPTS) {
+            errorStore.set("Max reconnection attempts reached");
+            return;
+        }
+        const connectionToken = await getConnection($deviceIdStore);
+
+        if (connectionToken) {
+            connectToWebsocket(connectionToken);
+            return;
+        } else {
+            if (reconnectionAttempt === 0) {
+                errorStore.set("Connection could not be established");
+            }
+            setTimeout(async () => {
                 console.log(`Reconnecting attempt #${reconnectionAttempt + 1}`);
-                connect(connectionToken);
+                handleReconnection();
                 reconnectionAttempt += 1;
             }, RECONNECTION_DELAY);
-        } else {
-            console.log("Max reconnection attempts reached");
+            return;
         }
     }
+
     async function establishWSConnection() {
         const connectionToken = await getConnection($deviceIdStore);
         if (connectionToken) {
-            connect(connectionToken);
+            connectToWebsocket(connectionToken);
         } else {
             errorStore.set("Connection could not be established");
         }
@@ -102,34 +117,44 @@
             cursor: "none",
         };
         // containerStyle = `background-color: #${backgroundColor}`;
-        console.log(`new style: ${JSON.stringify(styleObj)}`)
+        console.log(`new style: ${JSON.stringify(styleObj)}`);
         style = Object.entries(styleObj)
             .map(([prop, value]) => `${prop}: ${value}`)
             .join("; ");
     }
+
+    let type = "image"; // only for legacy db without mimetypes, remove me
+    $: if (currentContent && currentContent.uri) {
+        console.log(`Mimetype: ${currentContent.mimetype}`);
+        if (currentContent.mimetype) {
+            type = currentContent.mimetype.split("/")[0];
+        }
+    }
 </script>
 
 <div class={currentContent ? "hide-cursor" : ""}>
-    {#if !deviceInfo && !currentContent}
+    {#if currentContent}
+        {#if type == "image"}
+            <img class="rendered-content" src={currentContent.uri} alt="Content" {style} />
+        {:else if type == "video"}
+            <!-- svelte-ignore a11y-media-has-caption -->
+            <video class="rendered-content" src={currentContent.uri} loop autoplay muted {style} />
+        {:else if type == "audio"}
+            <audio class="rendered-content" src={currentContent.uri} controls autoplay loop {style} />
+        {:else if type == "text"}
+            <!-- svelte-ignore a11y-missing-attribute -->
+            <iframe class="rendered-content" src={currentContent.uri} {style} />
+        {/if}
+        <!-- <ContentRenderer content={currentContent} {style} /> -->
+    {:else if !deviceInfo}
         <h1>Device Info: No info yet</h1>
-    {/if}
-
-    {#if deviceInfo && !currentContent}
+    {:else}
         <div class="container">
             <h1>{deviceInfo.name}</h1>
             <h4>Id: {deviceInfo.id}</h4>
             <h4>Waiting for content...</h4>
         </div>
-    {:else}
-        <h1>Device Info: No info yet</h1>
     {/if}
-
-    {#if currentContent}
-        <img src={currentContent.uri} alt="Content" {style} />
-    {/if}
-    <!-- {#if currentContent}
-        <img src={currentContent.uri} alt="Content" />
-    {/if} -->
 </div>
 
 <style>
@@ -143,14 +168,13 @@
         background-color: rgb(0, 0, 0);
     }
 
-    img {
+    .rendered-content {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
         object-fit: contain;
-        /* make object-fit: cover; if we want it to fill */
     }
 
     .hide-cursor {

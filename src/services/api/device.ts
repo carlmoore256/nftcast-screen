@@ -35,7 +35,7 @@ export async function getConnection(deviceId: string): Promise<string> {
         return null;
     } catch (error) {
         errorStore.set(`Failed to connect to server with device id ${deviceId}`);
-        throw error;
+        return null;
     }
 }
 
