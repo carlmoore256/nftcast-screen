@@ -15,6 +15,7 @@
     "checkJs": true,
     "isolatedModules": true,
     "lib" : [
+      "ESNext",
       "WebWorker"
     ]
   },
