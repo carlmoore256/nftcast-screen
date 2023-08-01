@@ -128,7 +128,10 @@
         console.log(`Mimetype: ${currentContent.mimetype}`);
         if (currentContent.mimetype) {
             type = currentContent.mimetype.split("/")[0];
+        } else {
+            type = "image";
         }
+        console.log(`Type Set: ${type}`);
     }
 </script>
 
