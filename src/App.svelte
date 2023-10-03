@@ -7,6 +7,8 @@
     import { isAuthenticated } from "./stores/isAuthenticatedStore";
     import Notifications from "./components/Notifications.svelte";
     import { successStore } from "./stores/successStore";
+    // import { registerServiceWorker } from "./services/service-workers/register-worker";
+    import Console from "./components/Console.svelte";
 
     let hasConnected = false;
 
@@ -14,6 +16,8 @@
     // window.addEventListener("focus", function () {
     //     location.reload();
     // });
+
+    // registerServiceWorker("/monitor-network-worker.js")
 
 
     onMount(async () => {
@@ -37,6 +41,7 @@
 </script>
 
 <div class="container">
+    <Console enabled={true} />
     <Notifications />
     {#if $isAuthenticated}
         <ContentDisplay />

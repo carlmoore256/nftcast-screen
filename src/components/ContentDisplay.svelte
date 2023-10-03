@@ -4,6 +4,8 @@
         IDevice,
         IContent,
         IDeviceContentPairConfig,
+        ITransform,
+        IStyle,
     } from "../models/types";
     import { errorStore } from "../stores/errorStore";
     import { deviceIdStore } from "../stores/deviceIdStore";
@@ -33,9 +35,11 @@
                 const data = JSON.parse(event.data);
                 switch (data.key) {
                     case "deviceUpdateInfo":
-                        deviceInfo = data.value.deviceInfo;
-                        currentContent = data.value.currentContent;
-                        deviceContentPairConfig = data.value.dcpConfig;
+                        deviceInfo = data.value.device;
+                        currentContent = data.value.content;
+                        // deviceInfo = data.value.deviceInfo;
+                        // currentContent = data.value.currentContent;
+                        // deviceContentPairConfig = data.value.dcpConfig;
                         break;
                     case "deviceDeleted":
                         currentContent = null;
@@ -102,25 +106,36 @@
         }
     }
 
-    let style = "";
-    // let containerStyle = "background-color: rgb(24, 24, 24);";
-    $: if (deviceContentPairConfig) {
-        const { size, posX, posY, rotation, backgroundColor } =
-            deviceContentPairConfig;
-        const styleObj = {
-            position: "absolute",
-            top: `calc(50% + ${posY * 100}%)`,
-            left: `calc(50% + ${posX * 100}%)`,
-            transform: `translate(-50%, -50%) scale(${size}) rotate(${rotation}deg)`,
-            backgroundColor: `#${backgroundColor}`,
-            objectFit: "contain",
-            cursor: "none",
-        };
-        // containerStyle = `background-color: #${backgroundColor}`;
-        console.log(`new style: ${JSON.stringify(styleObj)}`);
-        style = Object.entries(styleObj)
-            .map(([prop, value]) => `${prop}: ${value}`)
+    function cssStringify(styles: { [key: string]: string | number }): string {
+        return Object.entries(styles)
+            .map(
+                ([prop, value]) =>
+                    `${prop.replace(/([A-Z])/g, "-$1").toLowerCase()}: ${value}`
+            )
             .join("; ");
+    }
+
+    let style = {
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        backgroundColor: `#000000`,
+        objectFit: "contain",
+        cursor: "none",
+    };
+
+    $: if (currentContent.transform) {
+        const { size, posX, posY, rotation } = currentContent.transform;
+        style.top = `calc(50% + ${posY * 100}%)`;
+        style.left = `calc(50% + ${posX * 100}%)`;
+        style.transform = `translate(-50%, -50%) scale(${size}) rotate(${rotation}deg)`;
+    }
+
+    $: if (currentContent.style) {
+        const { backgroundColor } = currentContent.style;
+        style.backgroundColor = backgroundColor;
+        // consider adding raw style values here
     }
 
     let type = "image"; // only for legacy db without mimetypes, remove me
@@ -131,22 +146,44 @@
         } else {
             type = "image";
         }
-        console.log(`Type Set: ${type}`);
     }
 </script>
 
 <div class={currentContent ? "hide-cursor" : ""}>
     {#if currentContent}
         {#if type == "image"}
-            <img class="rendered-content" src={currentContent.uri} alt="Content" {style} />
+            <img
+                class="rendered-content"
+                src={currentContent.uri}
+                alt="Content"
+                style={cssStringify(style)}
+            />
         {:else if type == "video"}
             <!-- svelte-ignore a11y-media-has-caption -->
-            <video class="rendered-content" src={currentContent.uri} loop autoplay muted {style} />
+            <video
+                class="rendered-content"
+                src={currentContent.uri}
+                loop
+                autoplay
+                muted
+                style={cssStringify(style)}
+            />
         {:else if type == "audio"}
-            <audio class="rendered-content" src={currentContent.uri} controls autoplay loop {style} />
+            <audio
+                class="rendered-content"
+                src={currentContent.uri}
+                controls
+                autoplay
+                loop
+                style={cssStringify(style)}
+            />
         {:else if type == "text"}
             <!-- svelte-ignore a11y-missing-attribute -->
-            <iframe class="rendered-content" src={currentContent.uri} {style} />
+            <iframe
+                class="rendered-content"
+                src={currentContent.uri}
+                style={cssStringify(style)}
+            />
         {/if}
         <!-- <ContentRenderer content={currentContent} {style} /> -->
     {:else if !deviceInfo}

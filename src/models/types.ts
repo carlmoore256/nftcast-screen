@@ -3,8 +3,22 @@ export interface IContent {
     uri: string;
     name: string | null;
     description: string | null;
-    mimetype: string | null;
     userId: string;
+    thumbnailUri: string | null;
+    mimetype: string | null;
+    transform?: ITransform;
+    style?: IStyle;
+}
+
+export interface ITransform {
+    size: number;
+    posX: number;
+    posY: number;
+    rotation: number;
+}
+
+export interface IStyle {
+    backgroundColor: string;
 }
 
 export interface IDevice {
