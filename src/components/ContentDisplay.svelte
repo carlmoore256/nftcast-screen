@@ -1,18 +1,105 @@
 <script lang="ts">
-    import { getConnection } from "../services/api/device";
-    import type {
-        IDevice,
-        IContent,
-        IDeviceContentPairConfig,
-        ITransform,
-        IStyle,
-    } from "../models/types";
-    import { errorStore } from "../stores/errorStore";
-    import { deviceIdStore } from "../stores/deviceIdStore";
-    import { isAuthenticated } from "../stores/isAuthenticatedStore";
-    import ContentRenderer from "./ContentRenderer.svelte";
+    import {
+        deviceInfoStore,
+        currentContentStore,
+        currentTransformStore,
+        currentStyleStore,
+    } from "../services/websocketService";
 
-    let ws;
+    function cssStringify(styles: { [key: string]: string | number }): string {
+        return Object.entries(styles)
+            .map(
+                ([prop, value]) =>
+                    `${prop.replace(/([A-Z])/g, "-$1").toLowerCase()}: ${value}`
+            )
+            .join("; ");
+    }
+
+    let style = {
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        backgroundColor: `#000000`,
+        objectFit: "contain",
+        cursor: "none",
+    };
+
+    let type = "image";
+
+    $: {
+        if ($currentTransformStore) {
+            const { size, posX, posY, rotation } = $currentTransformStore;
+            style.top = `calc(50% + ${posY * 100}%)`;
+            style.left = `calc(50% + ${posX * 100}%)`;
+            style.transform = `translate(-50%, -50%) scale(${size}) rotate(${rotation}deg)`;
+        }
+
+        if ($currentStyleStore) {
+            const { backgroundColor } = $currentStyleStore;
+            style.backgroundColor = backgroundColor;
+        }
+
+        if ($currentContentStore) {
+            const { mimetype } = $currentContentStore;
+            if (mimetype) {
+                type = mimetype.split("/")[0];
+            } else {
+                type = "image";
+            }
+        }
+    }
+</script>
+
+<div class={$currentContentStore ? "hide-cursor" : ""}>
+    {#if $currentContentStore}
+        {#if type == "image"}
+            <img
+                class="rendered-content"
+                src={$currentContentStore.uri}
+                alt="Content"
+                style={cssStringify(style)}
+            />
+        {:else if type == "video"}
+            <!-- svelte-ignore a11y-media-has-caption -->
+            <video
+                class="rendered-content"
+                src={$currentContentStore.uri}
+                loop
+                autoplay
+                muted
+                style={cssStringify(style)}
+            />
+        {:else if type == "audio"}
+            <audio
+                class="rendered-content"
+                src={$currentContentStore.uri}
+                controls
+                autoplay
+                loop
+                style={cssStringify(style)}
+            />
+        {:else if type == "text"}
+            <!-- svelte-ignore a11y-missing-attribute -->
+            <iframe
+                class="rendered-content"
+                src={$currentContentStore.uri}
+                style={cssStringify(style)}
+            />
+        {/if}
+        <!-- <ContentRenderer content={currentContent} {style} /> -->
+    {:else if !$deviceInfoStore}
+        <h1>Device Info: No info yet</h1>
+    {:else}
+        <div class="container">
+            <h1>{$deviceInfoStore.name}</h1>
+            <h4>Id: {$deviceInfoStore.id}</h4>
+            <h4>Waiting for content...</h4>
+        </div>
+    {/if}
+</div>
+
+<!-- let ws;
 
     let currentContent: IContent | null = null;
     let currentTransform: ITransform | null = null;
@@ -111,100 +198,7 @@
         } else {
             errorStore.set("Connection could not be established");
         }
-    }
-
-    function cssStringify(styles: { [key: string]: string | number }): string {
-        return Object.entries(styles)
-            .map(
-                ([prop, value]) =>
-                    `${prop.replace(/([A-Z])/g, "-$1").toLowerCase()}: ${value}`
-            )
-            .join("; ");
-    }
-
-    let style = {
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        backgroundColor: `#000000`,
-        objectFit: "contain",
-        cursor: "none",
-    };
-
-    let type = "image";
-
-    $: {
-        if (currentTransform) {
-            const { size, posX, posY, rotation } = currentTransform;
-            style.top = `calc(50% + ${posY * 100}%)`;
-            style.left = `calc(50% + ${posX * 100}%)`;
-            style.transform = `translate(-50%, -50%) scale(${size}) rotate(${rotation}deg)`;
-        }
-
-        if (currentStyle) {
-            const { backgroundColor } = currentStyle;
-            style.backgroundColor = backgroundColor;
-        }
-
-        if (currentContent) {
-            const { uri, mimetype } = currentContent;
-            if (mimetype) {
-                type = mimetype.split("/")[0];
-            } else {
-                type = "image";
-            }
-        }
-    }
-</script>
-
-<div class={currentContent ? "hide-cursor" : ""}>
-    {#if currentContent}
-        {#if type == "image"}
-            <img
-                class="rendered-content"
-                src={currentContent.uri}
-                alt="Content"
-                style={cssStringify(style)}
-            />
-        {:else if type == "video"}
-            <!-- svelte-ignore a11y-media-has-caption -->
-            <video
-                class="rendered-content"
-                src={currentContent.uri}
-                loop
-                autoplay
-                muted
-                style={cssStringify(style)}
-            />
-        {:else if type == "audio"}
-            <audio
-                class="rendered-content"
-                src={currentContent.uri}
-                controls
-                autoplay
-                loop
-                style={cssStringify(style)}
-            />
-        {:else if type == "text"}
-            <!-- svelte-ignore a11y-missing-attribute -->
-            <iframe
-                class="rendered-content"
-                src={currentContent.uri}
-                style={cssStringify(style)}
-            />
-        {/if}
-        <!-- <ContentRenderer content={currentContent} {style} /> -->
-    {:else if !deviceInfo}
-        <h1>Device Info: No info yet</h1>
-    {:else}
-        <div class="container">
-            <h1>{deviceInfo.name}</h1>
-            <h4>Id: {deviceInfo.id}</h4>
-            <h4>Waiting for content...</h4>
-        </div>
-    {/if}
-</div>
+    } -->
 
 <style>
     .container {

@@ -5,6 +5,13 @@ import { logs } from '../stores/logStore';
 const originalConsoleLog = console.log;
 const originalConsoleError = console.error;
 
+export function logToConsole(message: string) {
+    logs.update(logs => [...logs, {
+        type: 'log',
+        message
+    }]);
+}
+
 
 export function toggleUILogger(isEnabled: boolean) {
     if (isEnabled) {

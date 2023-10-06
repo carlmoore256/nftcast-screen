@@ -21,6 +21,11 @@ export interface IStyle {
     backgroundColor: string;
 }
 
+export interface IDeviceSettings {
+    deviceId: string;
+    showConsole: boolean;
+}
+
 export interface IDevice {
     id: string;
     name: string;

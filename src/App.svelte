@@ -7,6 +7,7 @@
     import { isAuthenticated } from "./stores/isAuthenticatedStore";
     import Notifications from "./components/Notifications.svelte";
     import { successStore } from "./stores/successStore";
+    import { deviceSettingsStore } from "./services/websocketService";
     // import { registerServiceWorker } from "./services/service-workers/register-worker";
     import Console from "./components/Console.svelte";
 
@@ -18,7 +19,6 @@
     // });
 
     // registerServiceWorker("/monitor-network-worker.js")
-
 
     onMount(async () => {
         // successStore.set(`DeviceID is ${$deviceIdStore}`);
@@ -41,7 +41,9 @@
 </script>
 
 <div class="container">
-    <Console enabled={true} />
+    {#if $deviceSettingsStore.showConsole}
+        <Console enabled={true} />
+    {/if}
     <Notifications />
     {#if $isAuthenticated}
         <ContentDisplay />
