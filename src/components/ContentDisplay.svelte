@@ -13,9 +13,13 @@
     import ContentRenderer from "./ContentRenderer.svelte";
 
     let ws;
+
     let currentContent: IContent | null = null;
+    let currentTransform: ITransform | null = null;
+    let currentStyle: IStyle | null = null;
     let deviceInfo: IDevice | null = null;
-    let deviceContentPairConfig: IDeviceContentPairConfig | null = null;
+
+    // let deviceContentPairConfig: IDeviceContentPairConfig | null = null;
     let reconnectionAttempt = 0;
     const MAX_RECONNECTION_ATTEMPTS = 50;
     const RECONNECTION_DELAY = 500;
@@ -32,28 +36,31 @@
 
         ws.onmessage = (event) => {
             try {
-                const data = JSON.parse(event.data);
-                switch (data.key) {
-                    case "deviceUpdateInfo":
-                        deviceInfo = data.value.device;
-                        currentContent = data.value.content;
-                        // deviceInfo = data.value.deviceInfo;
-                        // currentContent = data.value.currentContent;
-                        // deviceContentPairConfig = data.value.dcpConfig;
+                const { key, value } = JSON.parse(event.data);
+                console.log(
+                    `Received ${key} with value ${JSON.stringify(value)}`
+                );
+                switch (key) {
+                    case "deviceInfo":
+                        deviceInfo = {...value};
+                        break;
+                    case "content":
+                        const { content, transform, style } = value;
+                        currentContent = content;
+                        currentTransform = transform;
+                        currentStyle = style;
+                        break;
+                    case "transform":
+                        currentTransform = value;
+                        break;
+                    case "style":
+                        currentStyle = value;
                         break;
                     case "deviceDeleted":
                         currentContent = null;
                         deviceInfo = null;
                         errorStore.set("Device deleted");
                         isAuthenticated.set(false);
-                        break;
-                    case "deviceContentPairConfig":
-                        console.log(
-                            `Received update config: ${JSON.stringify(
-                                data.value
-                            )}`
-                        );
-                        deviceContentPairConfig = { ...data.value };
                         break;
                 }
             } catch (error) {
@@ -125,26 +132,28 @@
         cursor: "none",
     };
 
-    $: if (currentContent.transform) {
-        const { size, posX, posY, rotation } = currentContent.transform;
-        style.top = `calc(50% + ${posY * 100}%)`;
-        style.left = `calc(50% + ${posX * 100}%)`;
-        style.transform = `translate(-50%, -50%) scale(${size}) rotate(${rotation}deg)`;
-    }
+    let type = "image";
 
-    $: if (currentContent.style) {
-        const { backgroundColor } = currentContent.style;
-        style.backgroundColor = backgroundColor;
-        // consider adding raw style values here
-    }
+    $: {
+        if (currentTransform) {
+            const { size, posX, posY, rotation } = currentTransform;
+            style.top = `calc(50% + ${posY * 100}%)`;
+            style.left = `calc(50% + ${posX * 100}%)`;
+            style.transform = `translate(-50%, -50%) scale(${size}) rotate(${rotation}deg)`;
+        }
 
-    let type = "image"; // only for legacy db without mimetypes, remove me
-    $: if (currentContent && currentContent.uri) {
-        console.log(`Mimetype: ${currentContent.mimetype}`);
-        if (currentContent.mimetype) {
-            type = currentContent.mimetype.split("/")[0];
-        } else {
-            type = "image";
+        if (currentStyle) {
+            const { backgroundColor } = currentStyle;
+            style.backgroundColor = backgroundColor;
+        }
+
+        if (currentContent) {
+            const { uri, mimetype } = currentContent;
+            if (mimetype) {
+                type = mimetype.split("/")[0];
+            } else {
+                type = "image";
+            }
         }
     }
 </script>

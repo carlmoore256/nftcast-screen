@@ -25,6 +25,10 @@ export interface IDevice {
     id: string;
     name: string;
     userId: string;
+    createdAt: Date;
+    transformId: string | null;
+    styleId: string | null;
+    directoryId: string | null;
 }
 
 export interface IDeviceContentPair {

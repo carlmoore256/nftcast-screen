@@ -19,7 +19,6 @@ export function toggleUILogger(isEnabled: boolean) {
         };
 
         console.error = function (...args) {
-            console.log("GOT ERROR!!!!", args);
             const message = args.join(' ');
             logs.update(logs => [...logs, {
                 type: 'error',
