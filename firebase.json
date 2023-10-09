@@ -1,11 +1,23 @@
 {
-  "hosting": {
+  "hosting": [{
     "target": "screen",
     "source": ".",
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      ".env*"
+    ]
+  }, 
+  {
+    "target": "dev",
+    "source": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      ".env*"
     ]
   }
+  ]
 }

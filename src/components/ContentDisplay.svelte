@@ -22,10 +22,11 @@
         transform: "translate(-50%, -50%)",
         backgroundColor: `#000000`,
         objectFit: "contain",
-        cursor: "none",
     };
 
     let type = "image";
+    let cursorStyle = "show-cursor";
+
 
     $: {
         if ($currentTransformStore) {
@@ -47,11 +48,31 @@
             } else {
                 type = "image";
             }
+        } else {
+            cursorStyle = "show-cursor";
         }
     }
+
+    let cancellationToken: any | null = null;
 </script>
 
-<div class={$currentContentStore ? "hide-cursor" : ""}>
+<svelte:window on:mousemove={() => {
+    if (!$currentContentStore) return;
+
+    if (cursorStyle !== "show-cursor") {
+        cursorStyle = "show-cursor";
+        console.log("show cursor");
+    }
+    if (cancellationToken) {
+        clearTimeout(cancellationToken);
+    }
+    cancellationToken = setTimeout(() => {
+        console.log("hide cursor");
+        cursorStyle = "hide-cursor";
+    }, 1000);
+}}/>
+
+<div class={cursorStyle}>
     {#if $currentContentStore}
         {#if type == "image"}
             <img
@@ -99,107 +120,6 @@
     {/if}
 </div>
 
-<!-- let ws;
-
-    let currentContent: IContent | null = null;
-    let currentTransform: ITransform | null = null;
-    let currentStyle: IStyle | null = null;
-    let deviceInfo: IDevice | null = null;
-
-    // let deviceContentPairConfig: IDeviceContentPairConfig | null = null;
-    let reconnectionAttempt = 0;
-    const MAX_RECONNECTION_ATTEMPTS = 50;
-    const RECONNECTION_DELAY = 500;
-
-    establishWSConnection();
-
-    function connectToWebsocket(connectionToken: string) {
-        ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/${connectionToken}`);
-        ws.onopen = () => {
-            console.log("WebSocket is connected");
-            reconnectionAttempt = 0;
-            ws.send(JSON.stringify({ request: "update" }));
-        };
-
-        ws.onmessage = (event) => {
-            try {
-                const { key, value } = JSON.parse(event.data);
-                console.log(
-                    `Received ${key} with value ${JSON.stringify(value)}`
-                );
-                switch (key) {
-                    case "deviceInfo":
-                        deviceInfo = {...value};
-                        break;
-                    case "content":
-                        const { content, transform, style } = value;
-                        currentContent = content;
-                        currentTransform = transform;
-                        currentStyle = style;
-                        break;
-                    case "transform":
-                        currentTransform = value;
-                        break;
-                    case "style":
-                        currentStyle = value;
-                        break;
-                    case "deviceDeleted":
-                        currentContent = null;
-                        deviceInfo = null;
-                        errorStore.set("Device deleted");
-                        isAuthenticated.set(false);
-                        break;
-                }
-            } catch (error) {
-                errorStore.set("Error parsing data");
-            }
-        };
-
-        ws.onerror = (event) => {
-            errorStore.set("WebSocket error with server");
-            handleReconnection();
-        };
-
-        ws.onclose = (event) => {
-            if (reconnectionAttempt === 0) {
-                errorStore.set("Connection closed with server");
-            }
-            handleReconnection();
-        };
-    }
-
-    async function handleReconnection() {
-        if (reconnectionAttempt > MAX_RECONNECTION_ATTEMPTS) {
-            errorStore.set("Max reconnection attempts reached");
-            return;
-        }
-        const connectionToken = await getConnection($deviceIdStore);
-
-        if (connectionToken) {
-            connectToWebsocket(connectionToken);
-            return;
-        } else {
-            if (reconnectionAttempt === 0) {
-                errorStore.set("Connection could not be established");
-            }
-            setTimeout(async () => {
-                console.log(`Reconnecting attempt #${reconnectionAttempt + 1}`);
-                handleReconnection();
-                reconnectionAttempt += 1;
-            }, RECONNECTION_DELAY);
-            return;
-        }
-    }
-
-    async function establishWSConnection() {
-        const connectionToken = await getConnection($deviceIdStore);
-        if (connectionToken) {
-            connectToWebsocket(connectionToken);
-        } else {
-            errorStore.set("Connection could not be established");
-        }
-    } -->
-
 <style>
     .container {
         display: flex;
@@ -222,5 +142,9 @@
 
     .hide-cursor {
         cursor: none;
+    }
+
+    .show-cursor {
+        cursor: auto;
     }
 </style>

@@ -1,8 +1,9 @@
 import legacy from "@vitejs/plugin-legacy";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import babel from "vite-plugin-babel";
 import { readFileSync } from "fs";
+const env = loadEnv("all", process.cwd());
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -18,8 +19,8 @@ export default defineConfig({
     server: {
         port: 5173,
         https: {
-            key: readFileSync(""),
-            cert: readFileSync(""),
+            key: readFileSync(env.VITE_SSL_KEY),
+            cert: readFileSync(env.VITE_SSL_CERT),
         },
     },
 });
