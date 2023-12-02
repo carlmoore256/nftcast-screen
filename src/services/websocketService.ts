@@ -1,5 +1,11 @@
 import { writable } from "svelte/store";
-import type { IContent, IDevice, IStyle, ITransform, IDeviceSettings } from "../models/types";
+import type {
+    IContent,
+    IDevice,
+    IStyle,
+    ITransform,
+    IDeviceSettings,
+} from "../models/types";
 import { getConnection } from "../services/api/device";
 import { deviceIdStore } from "../stores/deviceIdStore";
 import { errorStore } from "../stores/errorStore";
@@ -16,7 +22,7 @@ export const deviceSettingsStore = writable<IDeviceSettings | null>({
     showConsole: true,
 });
 
-const MAX_RECONNECTION_ATTEMPTS = 50;
+const MAX_RECONNECTION_ATTEMPTS = 1;
 const RECONNECTION_DELAY = 500;
 
 let ws: WebSocket;
@@ -65,7 +71,7 @@ function handleWebsocketMessage(event: MessageEvent) {
                 currentStyleStore.set(value);
                 break;
             case "settings":
-                // here we can enable/disable the console 
+                // here we can enable/disable the console
                 deviceSettingsStore.set(value);
                 // console.log("GOT SETTINGS", value);
                 // logToConsole("GOT SETTINGS");
@@ -86,20 +92,21 @@ function handleWebsocketMessage(event: MessageEvent) {
 
 function handleWebsocketError(event: Event) {
     errorStore.set("WebSocket error with server");
-    handleReconnection();
+    handleReconnection("onerror");
 }
 
 function handleWebsocketOpen(event: Event) {
-    console.log("WebSocket is connected");
+    // console.log("WebSocket is connected");
     reconnectionAttempt = 0;
     sendDataToWebsocket({ request: "update" });
 }
 
 function handleWebsocketClose(event: CloseEvent) {
+    console.log("WebSocket is closed", event);
     if (reconnectionAttempt === 0) {
         errorStore.set("Connection closed with server");
     }
-    handleReconnection();
+    handleReconnection("onclose");
 }
 
 export function sendDataToWebsocket(data: any) {
@@ -116,13 +123,14 @@ export function sendDataToWebsocket(data: any) {
     }
 }
 
-async function handleReconnection() {
+async function handleReconnection(referrer?: string) {
     if (reconnectionAttempt > MAX_RECONNECTION_ATTEMPTS) {
         errorStore.set("Max reconnection attempts reached");
         return;
     }
     const connectionToken = await getConnection(deviceId);
     if (connectionToken) {
+        console.log(`Reconnection called from referrer: ${referrer}`);
         connectToWebsocket(connectionToken);
         return;
     } else {
@@ -131,7 +139,7 @@ async function handleReconnection() {
         }
         setTimeout(async () => {
             console.log(`Reconnecting attempt #${reconnectionAttempt + 1}`);
-            handleReconnection();
+            handleReconnection("self");
             reconnectionAttempt += 1;
         }, RECONNECTION_DELAY);
         return;

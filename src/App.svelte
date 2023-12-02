@@ -33,9 +33,15 @@
             if (isRenewed) {
                 _isAuthenticated = await getIsAuthenticated();
             }
+            
+            if (!_isAuthenticated) {
+                // if still not authenticated, then clear the device id
+                // deviceIdStore.set(null);
+                return;
+            }
         }
+        
         isAuthenticated.set(_isAuthenticated);
-
         hasConnected = true;
     });
 </script>
