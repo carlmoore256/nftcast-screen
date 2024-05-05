@@ -5,11 +5,11 @@
   "targets": {
     "nftcast-app": {
       "hosting": {
-        "screen": [
+        "prod": [
           "nftcast-app"
         ],
         "dev": [
-          "nftcast-dev"
+          "nftcast-dev-screen"
         ]
       }
     }
