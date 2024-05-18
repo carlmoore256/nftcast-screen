@@ -47,6 +47,7 @@
 </script>
 
 <div class="container">
+    <p>foobar</p>
     {#if $deviceSettingsStore.showConsole}
         <Console enabled={true} />
     {/if}
