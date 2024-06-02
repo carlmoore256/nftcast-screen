@@ -9,6 +9,15 @@ const env = loadEnv("all", process.cwd());
 if (env.VITE_LOCAL_DEV) {
   console.log("Local dev mode enabled");
 }
+
+const server = env.VITE_LOCAL_DEV ? {
+    port: 5173,
+    https: {
+        key: readFileSync(env.VITE_SSL_KEY),
+        cert: readFileSync(env.VITE_SSL_CERT),
+    },
+} : undefined;
+
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [
@@ -20,11 +29,5 @@ export default defineConfig({
     build: {
         minify: false,
     },
-    server: {
-        port: 5173,
-        https: {
-            key: readFileSync(env.VITE_SSL_KEY),
-            cert: readFileSync(env.VITE_SSL_CERT),
-        },
-    },
+    server: server
 });
