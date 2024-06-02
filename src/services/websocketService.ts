@@ -6,7 +6,7 @@ import type {
     ITransform,
     IDeviceSettings,
 } from "../models/types";
-import { getConnection } from "../services/api/device";
+import { getConnection } from "./api/display";
 import { deviceIdStore } from "../stores/deviceIdStore";
 import { errorStore } from "../stores/errorStore";
 import { isAuthenticated } from "../stores/isAuthenticatedStore";

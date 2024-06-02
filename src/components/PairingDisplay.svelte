@@ -5,7 +5,7 @@
     import { getPairingCode, getPairingStatus } from "../services/api/pair";
     import { isAuthenticated } from "../stores/isAuthenticatedStore";
     import { successStore } from "../stores/successStore";
-    import { getIsAuthenticated } from "../services/api/device";
+    import { getIsAuthenticated } from "../services/api/display";
     import { errorStore } from "../stores/errorStore";
     import PairingCode from "./PairingCode.svelte";
 
