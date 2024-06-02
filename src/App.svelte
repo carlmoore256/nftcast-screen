@@ -74,10 +74,11 @@
         <div class="hero min-h-screen bg-black">
             <!-- Here we can switch the behavior for different types of displays -->
             {#if data.deviceType !== "SmartTV" && data.user === null}
-                <div class="absolute top-2 right-2">
+                <div class="absolute top-2 right-2" style="position: absolute; top: 0px; right: 0px; padding: 10px;">
                     <button
                         class="btn btn-primary"
-                        on:click={() => (window.location.href = "/login")}>Login</button
+                        style="padding: 10px; font-size: 1.0rem;"
+                        on:click={() => (window.location.href = `${import.meta.env.VITE_APP_URL}/login`)}>Login</button
                     >
                 </div>
             {/if}
@@ -91,6 +92,15 @@
             {/if}
         </div>
     {/if}
+{:else}
+<div class="container">
+    <div class="no-connection">
+        <div>
+            <h1>No connection to the server</h1>
+            <p>nftcast API is unavailable</p>
+        </div>
+    </div>
+</div>
 {/if}
 
 <!-- <div class="container"> -->
@@ -103,6 +113,16 @@
 <!-- </div> -->
 
 <style>
+    .no-connection {
+        background-color: #603532;
+        padding: 10px 30px;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
     .navbar {
         position: fixed;
         top: 0;

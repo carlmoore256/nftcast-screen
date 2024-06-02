@@ -6,7 +6,7 @@
 
     export let code = "";
     export let partialCode = 0;
-    const PUBLIC_URL = import.meta.env.VITE_PUBLIC_URL;
+    const APP_URL = import.meta.env.VITE_APP_URL;
 
     $: colors = Array.from(code).map((c, i) =>
         partialCode && i < partialCode ? "red" : charToHue(c, 60, 80)
@@ -23,7 +23,7 @@
 
     onMount(() => {
         if (canvasElement) {
-            QRCode.toCanvas(canvasElement, `${PUBLIC_URL}/claim/${code}`, {
+            QRCode.toCanvas(canvasElement, `${APP_URL}/claim/${code}`, {
                 width: 100,
                 margin: 0,
                 color: {
@@ -35,7 +35,7 @@
     });
 
     $: if (canvasElement) {
-        QRCode.toCanvas(canvasElement, `${PUBLIC_URL}/claim/${code}`, {
+        QRCode.toCanvas(canvasElement, `${APP_URL}/claim/${code}`, {
             width: 100,
             margin: 0,
             color: {
@@ -46,10 +46,13 @@
     }
 </script>
 
-<div class="relative p-2 w-full flex flex-col items-center gap-5">
+<div class="relative p-2 w-full flex flex-col items-center gap-5 container">
     {#if code}
         <canvas class="w-full" bind:this={canvasElement} />
-        <div class="text-center bg-base-300 p-2 rounded-md">
+        <div
+            class="text-center bg-base-300 p-2 rounded-md"
+            style="font-size: 40px; font-weight: bold;"
+        >
             {#each colors as color, i (i)}
                 <!-- <span style="color: {color};">{code[i]}</span> -->
                 <span
@@ -60,11 +63,43 @@
                 >
             {/each}
         </div>
-        <p>Display is ready to pair</p>
+
+        <div class="info-text">
+            <!-- <h4>Connect this Display</h4> -->
+            <p>Enter code in the <a href={`${import.meta.env.VITE_APP_URL}/dashboard`}>nftcast dashboard</a></p>
+        </div>
     {/if}
 </div>
 
 <style>
+
+    .info-text {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        margin-top: 20px;
+    }
+
+    .info-text h4 {
+        font-size: 1.5rem;
+        margin: 0;
+    }
+
+    .info-text p {
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        width: 100vw;
+    }
+
     .number {
         color: rgb(255, 255, 255);
     }
