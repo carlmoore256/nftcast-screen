@@ -8,42 +8,45 @@
     import Notifications from "./components/Notifications.svelte";
     import { successStore } from "./stores/successStore";
     import { deviceSettingsStore } from "./services/websocketService";
-    // import { registerServiceWorker } from "./services/service-workers/register-worker";
     import Console from "./components/Console.svelte";
 
-    let hasConnected = false;
-
-    // try to get it to re-establish connection
-    // window.addEventListener("focus", function () {
-    //     location.reload();
-    // });
-
-    // registerServiceWorker("/monitor-network-worker.js")
-
     onMount(async () => {
+        isAuthenticated.set(await getIsAuthenticated());
+
         // successStore.set(`DeviceID is ${$deviceIdStore}`);
 
-        let _isAuthenticated = false;
+        // let _isAuthenticated = false;
+        // _isAuthenticated = ;
 
-        _isAuthenticated = await getIsAuthenticated();
+        // if (!_isAuthenticated && $deviceIdStore) {
+        //     console.log("not authenticated, trying to renew cookie", $deviceIdStore);
+        //     const isRenewed = await renewCookie($deviceIdStore); // try to renew the cookie
+        //     if (isRenewed) {
+        //         _isAuthenticated = await getIsAuthenticated();
+        //     }
 
-        if (!_isAuthenticated && $deviceIdStore) {
-            // try to renew the cookie
-            const isRenewed = await renewCookie($deviceIdStore);
-            if (isRenewed) {
-                _isAuthenticated = await getIsAuthenticated();
-            }
-            
-            if (!_isAuthenticated) {
-                // if still not authenticated, then clear the device id
-                // deviceIdStore.set(null);
-                return;
+        //     if (!_isAuthenticated) {
+        //         // if still not authenticated, then clear the device id
+        //         deviceIdStore.set(null);
+        //         return;
+        //     }
+        // }
+
+        // isAuthenticated.set(_isAuthenticated);
+        // hasConnected = true;
+    });
+
+    $: {
+        if ($isAuthenticated) {
+            // if the device id store
+
+        } else {
+            if ($deviceIdStore) {
+                deviceIdStore.set(null);
+                await renewCookie($deviceIdStore);
             }
         }
-        
-        isAuthenticated.set(_isAuthenticated);
-        hasConnected = true;
-    });
+    }
 </script>
 
 <div class="container">
@@ -53,7 +56,7 @@
     <Notifications />
     {#if $isAuthenticated}
         <ContentDisplay />
-    {:else if hasConnected}
+    {:else}
         <PairingDisplay />
     {/if}
 </div>

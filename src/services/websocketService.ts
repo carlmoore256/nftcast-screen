@@ -6,7 +6,7 @@ import type {
     ITransform,
     IDeviceSettings,
 } from "../models/types";
-import { getConnection } from "../services/api/device";
+import { getConnectionToken } from "../services/api/device";
 import { deviceIdStore } from "../stores/deviceIdStore";
 import { errorStore } from "../stores/errorStore";
 import { isAuthenticated } from "../stores/isAuthenticatedStore";
@@ -29,18 +29,18 @@ let ws: WebSocket;
 let reconnectionAttempt = 0;
 let deviceId: string = null;
 
-deviceIdStore.subscribe(async (_deviceId) => {
-    if (!_deviceId) {
-        return;
-    }
-    deviceId = _deviceId;
-    const token = await getConnection(deviceId);
-    if (token) {
-        connectToWebsocket(token);
-    } else {
-        errorStore.set("Connection could not be established");
-    }
-});
+// deviceIdStore.subscribe(async (_deviceId) => {
+//     if (!_deviceId) {
+//         return;
+//     }
+//     deviceId = _deviceId;
+//     const token = await getConnection(deviceId);
+//     if (token) {
+//         connectToWebsocket(token);
+//     } else {
+//         errorStore.set("Connection could not be established");
+//     }
+// });
 
 function connectToWebsocket(connectionToken: string) {
     ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/${connectionToken}`);
@@ -128,7 +128,7 @@ async function handleReconnection(referrer?: string) {
         errorStore.set("Max reconnection attempts reached");
         return;
     }
-    const connectionToken = await getConnection(deviceId);
+    const connectionToken = await getConnectionToken(deviceId);
     if (connectionToken) {
         console.log(`Reconnection called from referrer: ${referrer}`);
         connectToWebsocket(connectionToken);

@@ -23,7 +23,7 @@ export async function getCurrentContentForDevice(
     }
 }
 
-export async function getConnection(deviceId: string): Promise<string> {
+export async function getConnectionToken(deviceId: string): Promise<string> {
     try {
         const response = await axios.get(
             `${getApiUrl()}/device/${deviceId}/connect`
