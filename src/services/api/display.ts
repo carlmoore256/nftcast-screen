@@ -29,32 +29,6 @@ export async function getLoadDataPayload(): Promise<
     }
 }
 
-export async function getCurrentContentForDisplay(deviceId: string): Promise<IContent | null> {
-    try {
-        const response = await axios.get(`${getApiUrl()}/device/${deviceId}/current-content`);
-        successStore.set("Content found for device");
-        return response.data;
-    } catch (error) {
-        errorStore.set(`No content found for device ${deviceId}`);
-        if (error.response.message === "No content found for device") {
-            return null;
-        }
-    }
-}
-
-export async function getConnection(deviceId: string): Promise<string> {
-    try {
-        const response = await axios.get(`${getApiUrl()}/device/${deviceId}/connect`);
-        if (response.data.connectionToken !== null) {
-            // successStore.set("Connected to server");
-            return response.data.connectionToken;
-        }
-        return null;
-    } catch (error) {
-        errorStore.set(`Failed to connect to server with device id ${deviceId}`);
-        return null;
-    }
-}
 
 /**
  * @deprecated

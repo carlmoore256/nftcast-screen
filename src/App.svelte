@@ -7,7 +7,8 @@
     import { isAuthenticated } from "./stores/isAuthenticatedStore";
     import Notifications from "./components/Notifications.svelte";
     import { successStore } from "./stores/successStore";
-    import { deviceSettingsStore } from "./services/websocketService";
+    // import { deviceSettingsStore } from "./services/websocketService";
+    import { deviceSettingsStore } from "./stores/deviceSettingsStore";
     // import { registerServiceWorker } from "./services/service-workers/register-worker";
     import Console from "./components/Console.svelte";
     import { getLoadDataPayload } from "./services/api/display";
